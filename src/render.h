@@ -1,6 +1,15 @@
 #ifndef RENDER_H
 #define RENDER_H
 
+
+enum {
+    AUDIO_TYPE_FORMANT_SYNTH = 0,
+    AUDIO_TYPE_UNVOICED_1 = 1,
+    AUDIO_TYPE_UNVOICED_2 = 2,
+    AUDIO_TYPE_VOICED_1 = 3,
+    AUDIO_TYPE_VOICED_2 = 4,
+};
+
 void Render();
 void SetMouthThroat(unsigned char mouth, unsigned char throat);
 

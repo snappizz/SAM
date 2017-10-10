@@ -52,11 +52,10 @@ unsigned char trans(unsigned char a, unsigned char b)
 extern int bufferpos;
 extern char *buffer;
 
-
-
-//timetable for more accurate c64 simulation
-int timetable[5][5] =
-{
+// Simulates the CPU time that the C64 spends between sample calculations,
+// dependent on the kinds of samples.
+// Delays are expressed in 1/50ths of samples.
+int timetable[5][5] = {
 	{162, 167, 167, 127, 128},
 	{226, 60, 60, 0, 0},
 	{225, 60, 59, 0, 0},
@@ -64,15 +63,15 @@ int timetable[5][5] =
 	{199, 0, 0, 54, 54}
 };
 
-void Output(int index, unsigned char A)
+void Output(int type, unsigned char sample)
 {
 	static unsigned oldtimetableindex = 0;
-	int k;
-	bufferpos += timetable[oldtimetableindex][index];
-	oldtimetableindex = index;
+	bufferpos += timetable[oldtimetableindex][type];
+	oldtimetableindex = type;
 	// write a little bit in advance
-	for(k=0; k<5; k++)
-		buffer[bufferpos/50 + k] = (A & 15)*16;
+	for (int k = 0; k < 5; k++) {
+		buffer[bufferpos / 50 + k] = (sample & 15) * 16;
+    }
 }
 
 
@@ -83,11 +82,11 @@ static unsigned char RenderVoicedSample(
 ) {
 	for (int i = 0; i < pitchPeriodDividedBy16; i++) {
 		unsigned char sample = sampleTable[bigOffset + littleOffset];
-		for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
 			if (sample & 128)
-                Output(3, 26);
+                Output(AUDIO_TYPE_VOICED_1, 26);
 			else
-                Output(4, 6);
+                Output(AUDIO_TYPE_VOICED_2, 6);
 			sample <<= 1;
 		}
 		littleOffset++;
@@ -95,18 +94,21 @@ static unsigned char RenderVoicedSample(
 	return littleOffset;
 }
 
-static void RenderUnvoicedSample(unsigned short bigOffset, unsigned char off, unsigned char mem53)
-{
+static void RenderUnvoicedSample(
+    unsigned short bigOffset,
+    unsigned char littleOffset,
+    unsigned char otherOffset
+) {
     do {
-        unsigned char sample = sampleTable[bigOffset + off];
+        unsigned char sample = sampleTable[bigOffset + littleOffset];
         for (int i = 0; i < 8; i++) {
             if ((sample & 128) != 0)
-                Output(2, 5);
+                Output(AUDIO_TYPE_UNVOICED_2, 5);
             else
-                Output(1, mem53);
+                Output(AUDIO_TYPE_UNVOICED_1, otherOffset);
             sample <<= 1;
         }
-    } while (++off != 0);
+    } while (++littleOffset != 0);
 }
 
 

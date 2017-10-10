@@ -18,7 +18,7 @@ extern unsigned char frequency1[256];
 extern unsigned char frequency2[256];
 extern unsigned char frequency3[256];
 
-extern void Output(int index, unsigned char A);
+extern void Output(int type, unsigned char sample);
 
 static void CombineGlottalAndFormants(unsigned char phase1, unsigned char phase2, unsigned char phase3, unsigned char Y)
 {
@@ -31,7 +31,7 @@ static void CombineGlottalAndFormants(unsigned char phase1, unsigned char phase2
     tmp  += 136;
     tmp >>= 4; // Scale down to 0..15 range of C64 audio.
 
-    Output(0, tmp & 0xf);
+    Output(AUDIO_TYPE_FORMANT_SYNTH, tmp & 0xf);
 }
 
 // PROCESS THE FRAMES
